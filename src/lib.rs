@@ -5,6 +5,7 @@
 #![test_runner(crate::test::runner)]
 #![reexport_test_harness_main = "test_main"]
 
+pub mod gdt;
 pub mod interrupts;
 pub mod qemu;
 pub mod serial;
@@ -13,6 +14,7 @@ pub mod vga_buffer;
 
 pub fn init() {
     interrupts::init_idt();
+    gdt::init();
 }
 
 /// Entry point for `cargo test`
