@@ -1,24 +1,12 @@
 #![feature(custom_test_frameworks)]
-#![test_runner(crate::test::runner)]
+#![test_runner(moss::test::runner)]
 #![reexport_test_harness_main = "test_main"]
 #![no_std]
 #![no_main]
 
-#[cfg(test)]
-mod qemu;
-mod serial;
-mod test;
-mod vga_buffer;
+use moss::*;
 
-#[cfg(not(test))]
 use core::panic::PanicInfo;
-
-#[cfg(not(test))]
-#[panic_handler]
-fn panic(info: &PanicInfo) -> ! {
-    println!("{}", info);
-    loop {}
-}
 
 #[unsafe(no_mangle)]
 pub extern "C" fn _start() -> ! {
@@ -35,7 +23,16 @@ pub extern "C" fn _start() -> ! {
     loop {}
 }
 
-#[test_case]
-fn trivial_assertion() {
-    assert_eq!(1, 1);
+/// This function is called on panic
+#[cfg(not(test))]
+#[panic_handler]
+fn panic(info: &PanicInfo) -> ! {
+    println!("{}", info);
+    loop {}
+}
+
+#[cfg(test)]
+#[panic_handler]
+fn panic(info: &PanicInfo) -> ! {
+    moss::test::panic_handler(info);
 }
