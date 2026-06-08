@@ -18,7 +18,7 @@ pub extern "C" fn _start() -> ! {
     test_main();
 
     println!("It did not crash!");
-    loop {}
+    moss::hlt_loop();
 }
 
 /// This function is called on panic
@@ -33,4 +33,5 @@ fn panic(info: &PanicInfo) -> ! {
 #[panic_handler]
 fn panic(info: &PanicInfo) -> ! {
     moss::test::panic_handler(info);
+    moss::hlt_loop();
 }

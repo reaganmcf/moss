@@ -1,7 +1,15 @@
 use lazy_static::lazy_static;
+use pic8259::ChainedPics;
+use spin;
 use x86_64::structures::idt::{InterruptDescriptorTable, InterruptStackFrame};
 
 use crate::{gdt, println};
+
+pub const PIC_1_OFFSET: u8 = 32;
+pub const PIC_2_OFFSET: u8 = PIC_1_OFFSET + 8;
+
+pub static PICS: spin::Mutex<ChainedPics> =
+    spin::Mutex::new(unsafe { ChainedPics::new(PIC_1_OFFSET, PIC_2_OFFSET) });
 
 lazy_static! {
     static ref IDT: InterruptDescriptorTable = {
@@ -12,6 +20,8 @@ lazy_static! {
                 .set_handler_fn(double_fault_handler)
                 .set_stack_index(gdt::DOUBLE_FAULT_IST_INDEX);
         }
+
+        idt[u8::from(InterruptIndex::Timer)].set_handler_fn(timer_interrupt_handler);
 
         idt
     };
@@ -32,7 +42,28 @@ extern "x86-interrupt" fn double_fault_handler(
     panic!("EXCEPTION: DOUBLE FAULT\n{:#?}", stack_frame);
 }
 
+extern "x86-interrupt" fn timer_interrupt_handler(_stack_frame: InterruptStackFrame) {
+    //print!(".");
+
+    unsafe {
+        PICS.lock()
+            .notify_end_of_interrupt(u8::from(InterruptIndex::Timer));
+    }
+}
+
 #[test_case]
 fn test_breakpoint_exception() {
     x86_64::instructions::interrupts::int3();
+}
+
+#[derive(Debug, Clone, Copy)]
+#[repr(u8)]
+pub enum InterruptIndex {
+    Timer = PIC_1_OFFSET,
+}
+
+impl From<InterruptIndex> for u8 {
+    fn from(value: InterruptIndex) -> Self {
+        value as u8
+    }
 }

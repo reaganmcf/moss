@@ -1,4 +1,5 @@
 use crate::{
+    hlt_loop,
     qemu::{QemuExitCode, exit_qemu},
     serial_print, serial_println,
 };
@@ -32,5 +33,5 @@ pub fn panic_handler(info: &PanicInfo) -> ! {
     serial_println!("[failed]\n");
     serial_println!("Error: {}\n", info);
     exit_qemu(QemuExitCode::Failed);
-    loop {}
+    hlt_loop();
 }
