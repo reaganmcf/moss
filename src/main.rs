@@ -12,7 +12,7 @@ use core::panic::PanicInfo;
 entry_point!(kernel_main);
 
 #[unsafe(no_mangle)]
-pub fn kernel_main(boot_info: &'static BootInfo) -> ! {
+pub fn kernel_main(_boot_info: &'static BootInfo) -> ! {
     println!("Hello world");
 
     moss::init();
