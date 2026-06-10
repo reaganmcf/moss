@@ -4,12 +4,15 @@
 #![no_std]
 #![no_main]
 
-use moss::*;
+use bootloader::{BootInfo, entry_point};
+use moss::println;
 
 use core::panic::PanicInfo;
 
+entry_point!(kernel_main);
+
 #[unsafe(no_mangle)]
-pub extern "C" fn _start() -> ! {
+pub fn kernel_main(boot_info: &'static BootInfo) -> ! {
     println!("Hello world");
 
     moss::init();
@@ -33,5 +36,4 @@ fn panic(info: &PanicInfo) -> ! {
 #[panic_handler]
 fn panic(info: &PanicInfo) -> ! {
     moss::test::panic_handler(info);
-    moss::hlt_loop();
 }
